@@ -9,10 +9,10 @@ using TelegramBotApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Конфигурация для Railway
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(5000);
-});
+//builder.WebHost.ConfigureKestrel(serverOptions =>
+//{
+//    serverOptions.ListenAnyIP(5001);
+//});
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
