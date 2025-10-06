@@ -4,18 +4,24 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore;
 using TelegramBotApi.Data;
-using TelegramBotApi.Services; // ✅ Добавлена
+using TelegramBotApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Конфигурация для Railway
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5000);
+});
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
 
-// ✅ Подключаем контекст БД
+// Подключаем контекст БД
 builder.Services.AddDbContext<TMKDbContext>(options =>
     options.UseSqlite("Data Source=tmk.db"));
 
-// ✅ Регистрируем сервисы
+// Регистрируем сервисы
 builder.Services.AddScoped<DataSeeder>();
 builder.Services.AddScoped<PriceCalculatorService>();
 
@@ -28,7 +34,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ✅ Инициализация БД
+// Инициализация БД
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TMKDbContext>();
