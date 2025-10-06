@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/TelegramBotApi.csproj": {}
+    "/Users/kdsuniq/Desktop/tmk/tmk-miniapp/TelegramBotApi.csproj": {}
   },
   "projects": {
-    "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/TelegramBotApi.csproj": {
+    "/Users/kdsuniq/Desktop/tmk/tmk-miniapp/TelegramBotApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/TelegramBotApi.csproj",
+        "projectUniqueName": "/Users/kdsuniq/Desktop/tmk/tmk-miniapp/TelegramBotApi.csproj",
         "projectName": "TelegramBotApi",
-        "projectPath": "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/TelegramBotApi.csproj",
+        "projectPath": "/Users/kdsuniq/Desktop/tmk/tmk-miniapp/TelegramBotApi.csproj",
         "packagesPath": "/Users/kdsuniq/.nuget/packages/",
-        "outputPath": "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/obj/",
+        "outputPath": "/Users/kdsuniq/Desktop/tmk/tmk-miniapp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/kdsuniq/.nuget/NuGet/NuGet.Config"
@@ -47,6 +47,38 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "System.ComponentModel.Annotations": {
+              "target": "Package",
+              "version": "[5.0.0, )"
             }
           },
           "imports": [
