@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "quH4nfLoo10=",
+  "success": true,
+  "projectFilePath": "/Users/kdsuniq/Desktop/tmk/TelegramBotApi/TelegramBotApi.csproj",
+  "expectedPackageFiles": [
+    "/Users/kdsuniq/.nuget/packages/microsoft.aspnetcore.openapi/9.0.9/microsoft.aspnetcore.openapi.9.0.9.nupkg.sha512",
+    "/Users/kdsuniq/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
