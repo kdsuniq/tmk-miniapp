@@ -20,52 +20,62 @@ namespace TelegramBotApi.Services
 
         public async Task SeedAsync()
         {
-            if (_db.Nomenclatures.Any()) return; // уже загружено
+            if (_db.Nomenclatures.Any()) return;
 
             var basePath = Path.Combine(_env.ContentRootPath, "DataFiles");
 
-            await SeedFromJson<Nomenclature>(_db.Nomenclatures, Path.Combine(basePath, "nomenclature.json"), "ArrayOfNomenclatureEl");
-            await SeedFromJson<Price>(_db.Prices, Path.Combine(basePath, "prices.json"), "ArrayOfPricesEl");
-            await SeedFromJson<Remnant>(_db.Remnants, Path.Combine(basePath, "remnants.json"), "ArrayOfRemnantsEl");
-            await SeedFromJson<Stock>(_db.Stocks, Path.Combine(basePath, "stocks.json"), "ArrayOfStockEl");
+            // ✅ ОТКЛЮЧАЕМ FOREIGN KEYS ДЛЯ ВСЕЙ СЕССИИ
+            await _db.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;");
+
+            try
+            {
+                // Загружаем в правильном порядке
+                await SeedFromJson<Stock>(_db.Stocks, Path.Combine(basePath, "stocks.json"), "ArrayOfStockEl");
+                await SeedFromJson<Nomenclature>(_db.Nomenclatures, Path.Combine(basePath, "nomenclature.json"), "ArrayOfNomenclatureEl");
+                await SeedFromJson<Price>(_db.Prices, Path.Combine(basePath, "prices.json"), "ArrayOfPricesEl");
+                await SeedFromJson<Remnant>(_db.Remnants, Path.Combine(basePath, "remnants.json"), "ArrayOfRemnantsEl");
+            }
+            finally
+            {
+                // ✅ ВКЛЮЧАЕМ ОБРАТНО
+                await _db.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;");
+            }
         }
 
         private async Task SeedFromJson<T>(DbSet<T> dbSet, string path, string rootName) where T : class
-{
-    if (!File.Exists(path)) return;
+        {
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"File not found: {path}");
+                return;
+            }
 
-    using var stream = File.OpenRead(path);
-    using var doc = await JsonDocument.ParseAsync(stream);
+            try
+            {
+                using var stream = File.OpenRead(path);
+                using var doc = await JsonDocument.ParseAsync(stream);
 
-    var root = doc.RootElement.GetProperty(rootName);
+                var root = doc.RootElement.GetProperty(rootName);
 
-    var options = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        Converters = { new EmptyStringConverter() }
-    };
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString
+                };
 
-    var items = JsonSerializer.Deserialize<List<T>>(root.GetRawText(), options);
+                var items = JsonSerializer.Deserialize<List<T>>(root.GetRawText(), options);
 
-    if (items != null && items.Any())
-    {
-        await dbSet.AddRangeAsync(items);
-        await _db.SaveChangesAsync();
-    }
-}
-
-public class EmptyStringConverter : JsonConverter<string>
-{
-    public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        return reader.TokenType == JsonTokenType.Null ? string.Empty : reader.GetString() ?? string.Empty;
-    }
-
-    public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value);
-    }
-}
+                if (items != null && items.Any())
+                {
+                    Console.WriteLine($"Loading {items.Count} items from {path}");
+                    await dbSet.AddRangeAsync(items);
+                    await _db.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading {path}: {ex.Message}");
+            }
+        }
     }
 }

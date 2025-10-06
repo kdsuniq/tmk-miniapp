@@ -12,8 +12,11 @@ namespace TelegramBotApi.Data
         public DbSet<Remnant> Remnants { get; set; }
         public DbSet<Stock> Stocks { get; set; }
 
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
 
-                protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Stock>().HasKey(s => s.IdStock);
             modelBuilder.Entity<Price>().HasKey(p => new { p.Id, p.IdStock });
@@ -40,6 +43,14 @@ namespace TelegramBotApi.Data
                 .HasOne(r => r.Stock)
                 .WithMany()
                 .HasForeignKey(r => r.IdStock);
+                
+            modelBuilder.Entity<Cart>().HasKey(c => c.Id);
+            modelBuilder.Entity<CartItem>().HasKey(ci => ci.Id);
+            
+            modelBuilder.Entity<Cart>()
+                .HasMany(c => c.Items)
+                .WithOne(ci => ci.Cart)
+                .HasForeignKey(ci => ci.CartId);
         }
     }
 }

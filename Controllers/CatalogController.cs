@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TelegramBotApi.Data;
+using TelegramBotApi.DTO.Catalog;
 
 namespace TelegramBotApi.Controllers
 {
@@ -61,7 +62,49 @@ namespace TelegramBotApi.Controllers
             }
 
             var result = await query.Take(50).ToListAsync();
-            return Ok(result);
+            
+            // ✅ Преобразуем в DTO чтобы избежать циклических ссылок
+            var response = result.Select(n => new CatalogItemDto
+            {
+                Id = n.Id,
+                Name = n.Name,
+                Gost = n.Gost,
+                SteelGrade = n.SteelGrade,
+                Diameter = n.Diameter,
+                PipeWallThickness = n.PipeWallThickness,
+                Koef = n.Koef,
+                Manufacturer = n.Manufacturer,
+                ProductionType = n.ProductionType,
+                Prices = n.Prices.Select(p => new PriceDto
+                {
+                    Id = p.Id,
+                    IdStock = p.IdStock,
+                    StockName = p.Stock?.StockName,
+                    PriceT = p.PriceT,
+                    PriceLimitT1 = p.PriceLimitT1,
+                    PriceT1 = p.PriceT1,
+                    PriceLimitT2 = p.PriceLimitT2,
+                    PriceT2 = p.PriceT2,
+                    PriceM = p.PriceM,
+                    PriceLimitM1 = p.PriceLimitM1,
+                    PriceM1 = p.PriceM1,
+                    PriceLimitM2 = p.PriceLimitM2,
+                    PriceM2 = p.PriceM2,
+                    NDS = p.NDS
+                }).ToList(),
+                Remnants = n.Remnants.Select(r => new RemnantDto
+                {
+                    Id = r.Id,
+                    IdStock = r.IdStock,
+                    StockName = r.Stock?.StockName,
+                    InStockT = r.InStockT,
+                    InStockM = r.InStockM,
+                    AvgTubeLength = r.AvgTubeLength,
+                    AvgTubeWeight = r.AvgTubeWeight
+                }).ToList()
+            }).ToList();
+
+            return Ok(response);
         }
     }
 }
