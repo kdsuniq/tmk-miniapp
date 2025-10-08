@@ -40,7 +40,7 @@ namespace TelegramBotApi.Controllers
                     UserId = request.UserId,
                     CartId = cart.Id,
                     
-                    // ✅ СОХРАНЯЕМ НОВЫЕ ДАННЫЕ
+
                     CustomerLastName = request.CustomerLastName,
                     INN = request.INN,
                     
@@ -180,7 +180,6 @@ namespace TelegramBotApi.Controllers
         }
     }
 
-    // ✅ ОБНОВЛЕННЫЙ КЛАСС ЗАПРОСА
     public class CreateOrderRequest
     {
         public long UserId { get; set; }
