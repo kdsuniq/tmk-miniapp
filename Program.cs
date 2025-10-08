@@ -8,21 +8,34 @@ using TelegramBotApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://*:" + (Environment.GetEnvironmentVariable("PORT") ?? "8080"));
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()    // Разрешаем любые домены
-              .AllowAnyMethod();   // Разрешаем любые методы
+        policy.WithOrigins(
+                "http://localhost:5173",                         
+                "https://localhost:5173",                        
+                "https://effervescent-malabi-475f7f.netlify.app", 
+                "https://*.netlify.app",                         
+                "https://web.telegram.org",                      
+                "https://oauth.telegram.org"                     
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
 
-// Подключаем контекст БД
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                      ?? "Data Source=tmk.db";
+
 builder.Services.AddDbContext<TMKDbContext>(options =>
-    options.UseSqlite("Data Source=tmk.db"));
+    options.UseSqlite(connectionString));
 
 // Регистрируем сервисы
 builder.Services.AddScoped<DataSeeder>();
@@ -37,6 +50,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseRouting(); 
 app.UseCors(); 
 
 // Инициализация БД
@@ -49,15 +63,14 @@ using (var scope = app.Services.CreateScope())
     await seeder.SeedAsync();
 }
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TMK MiniApp API v1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TMK MiniApp API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();

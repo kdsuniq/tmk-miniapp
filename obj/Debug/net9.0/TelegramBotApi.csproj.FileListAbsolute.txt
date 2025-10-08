@@ -195,3 +195,4 @@
 /Users/kdsuniq/Desktop/tmk/tmk-miniapp/obj/Debug/net9.0/TelegramBotApi.pdb
 /Users/kdsuniq/Desktop/tmk/tmk-miniapp/obj/Debug/net9.0/TelegramBotApi.genruntimeconfig.cache
 /Users/kdsuniq/Desktop/tmk/tmk-miniapp/obj/Debug/net9.0/ref/TelegramBotApi.dll
+/Users/kdsuniq/Desktop/tmk/tmk-miniapp/bin/Debug/net9.0/appsettings.Production.json
