@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TelegramBotApi.Data;
 using TelegramBotApi.Entities;
 using TelegramBotApi.Services;
-using TelegramBotApi.DTO.Cart; 
+using TelegramBotApi.DTO.Cart;
 
 namespace TelegramBotApi.Controllers
 {
@@ -62,89 +62,89 @@ namespace TelegramBotApi.Controllers
         }
 
         [HttpPost("add")]
-public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
-{
-    try
-    {
-        // Проверяем существование товара и склада
-        var nomenclatureExists = await _db.Nomenclatures.AnyAsync(n => n.Id == request.NomenclatureId);
-        var stockExists = await _db.Stocks.AnyAsync(s => s.IdStock == request.StockId);
-
-        if (!nomenclatureExists)
-            return BadRequest("Товар не найден");
-        if (!stockExists)
-            return BadRequest("Склад не найден");
-
-        // Находим цену для этого товара и склада
-        var price = await _db.Prices
-            .FirstOrDefaultAsync(p => p.Id == request.NomenclatureId && p.IdStock == request.StockId);
-
-        if (price == null)
-            return BadRequest("Цена для данного товара и склада не найдена");
-
-        // цену с учетом объемных скидок
-        var (unitPrice, priceTier) = _priceCalculator.CalculatePrice(price, request.Quantity, request.Unit);
-
-        // Находим или создаем корзину
-        var cart = await _db.Carts
-            .FirstOrDefaultAsync(c => c.UserId == request.UserId);
-
-        if (cart == null)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
-            cart = new Cart 
-            { 
-                Id = Guid.NewGuid(),
-                UserId = request.UserId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            await _db.Carts.AddAsync(cart);
-            await _db.SaveChangesAsync(); // Сохраняем сначала корзину
-        }
-
-        // Проверяем есть ли уже такой товар в корзине
-        var existingItem = await _db.CartItems
-            .FirstOrDefaultAsync(i => 
-                i.CartId == cart.Id &&
-                i.NomenclatureId == request.NomenclatureId && 
-                i.StockId == request.StockId && 
-                i.Unit == request.Unit);
-
-        if (existingItem != null)
-        {
-            // Обновляем количество и ПЕРЕСЧИТЫВАЕМ цену
-            existingItem.Quantity += request.Quantity;
-            var (newUnitPrice, newPriceTier) = _priceCalculator.CalculatePrice(price, existingItem.Quantity, request.Unit);
-            existingItem.UnitPrice = newUnitPrice;
-            existingItem.PriceTier = newPriceTier;
-        }
-        else
-        {
-            // Добавляем новый товар с РЕАЛЬНОЙ ценой
-            var cartItem = new CartItem
+            try
             {
-                Id = Guid.NewGuid(),
-                CartId = cart.Id,
-                NomenclatureId = request.NomenclatureId,
-                StockId = request.StockId,
-                Quantity = request.Quantity,
-                Unit = request.Unit,
-                UnitPrice = unitPrice, // цена
-                PriceTier = priceTier  // уровень скидки
-            };
-            await _db.CartItems.AddAsync(cartItem);
+                // Проверяем существование товара и склада
+                var nomenclatureExists = await _db.Nomenclatures.AnyAsync(n => n.Id == request.NomenclatureId);
+                var stockExists = await _db.Stocks.AnyAsync(s => s.IdStock == request.StockId);
+
+                if (!nomenclatureExists)
+                    return BadRequest("Товар не найден");
+                if (!stockExists)
+                    return BadRequest("Склад не найден");
+
+                // Находим цену для этого товара и склада
+                var price = await _db.Prices
+                    .FirstOrDefaultAsync(p => p.Id == request.NomenclatureId && p.IdStock == request.StockId);
+
+                if (price == null)
+                    return BadRequest("Цена для данного товара и склада не найдена");
+
+                // цену с учетом объемных скидок
+                var (unitPrice, priceTier) = _priceCalculator.CalculatePrice(price, request.Quantity, request.Unit);
+
+                // Находим или создаем корзину
+                var cart = await _db.Carts
+                    .FirstOrDefaultAsync(c => c.UserId == request.UserId);
+
+                if (cart == null)
+                {
+                    cart = new Cart
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = request.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    await _db.Carts.AddAsync(cart);
+                    await _db.SaveChangesAsync(); // Сохраняем сначала корзину
+                }
+
+                // Проверяем есть ли уже такой товар в корзине
+                var existingItem = await _db.CartItems
+                    .FirstOrDefaultAsync(i =>
+                        i.CartId == cart.Id &&
+                        i.NomenclatureId == request.NomenclatureId &&
+                        i.StockId == request.StockId &&
+                        i.Unit == request.Unit);
+
+                if (existingItem != null)
+                {
+                    // Обновляем количество и ПЕРЕСЧИТЫВАЕМ цену
+                    existingItem.Quantity += request.Quantity;
+                    var (newUnitPrice, newPriceTier) = _priceCalculator.CalculatePrice(price, existingItem.Quantity, request.Unit);
+                    existingItem.UnitPrice = newUnitPrice;
+                    existingItem.PriceTier = newPriceTier;
+                }
+                else
+                {
+                    // Добавляем новый товар с РЕАЛЬНОЙ ценой
+                    var cartItem = new CartItem
+                    {
+                        Id = Guid.NewGuid(),
+                        CartId = cart.Id,
+                        NomenclatureId = request.NomenclatureId,
+                        StockId = request.StockId,
+                        Quantity = request.Quantity,
+                        Unit = request.Unit,
+                        UnitPrice = unitPrice, // цена
+                        PriceTier = priceTier  // уровень скидки
+                    };
+                    await _db.CartItems.AddAsync(cartItem);
+                }
+
+                cart.UpdatedAt = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+
+                return Ok(new { Message = "Товар добавлен в корзину", CartId = cart.Id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
         }
-
-        cart.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { Message = "Товар добавлен в корзину", CartId = cart.Id });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { Error = ex.Message });
-    }
-}
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request)
@@ -159,7 +159,7 @@ public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
                 return BadRequest("Количество должно быть больше 0");
 
             cartItem.Quantity = request.Quantity;
-            
+
             // Обновляем время корзины
             var cart = await _db.Carts.FindAsync(cartItem.CartId);
             if (cart != null)
@@ -175,39 +175,46 @@ public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         [HttpDelete("remove/{itemId}")]
         public async Task<IActionResult> RemoveFromCart(Guid itemId)
         {
-            var cartItem = await _db.CartItems
-                .FirstOrDefaultAsync(ci => ci.Id == itemId);
-
-            if (cartItem == null)
-                return NotFound("Элемент корзины не найден");
-
-            _db.CartItems.Remove(cartItem);
-            
-            // Обновляем время корзины
-            var cart = await _db.Carts.FindAsync(cartItem.CartId);
-            if (cart != null)
+            try
             {
-                cart.UpdatedAt = DateTime.UtcNow;
+                var cartItem = await _db.CartItems
+                    .Include(ci => ci.Cart)
+                    .FirstOrDefaultAsync(ci => ci.Id == itemId);
+
+                if (cartItem == null)
+                    return NotFound("Элемент корзины не найден");
+
+                _db.CartItems.Remove(cartItem);
+
+                // Обновляем время корзины
+                var cart = await _db.Carts.FindAsync(cartItem.CartId);
+                if (cart != null)
+                {
+                    cart.UpdatedAt = DateTime.UtcNow;
+                }
+
+                await _db.SaveChangesAsync();
+
+                return Ok(new { Message = "Товар удален из корзины" });
             }
-
-            await _db.SaveChangesAsync();
-
-            return Ok(new { Message = "Товар удален из корзины" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
         }
-    }
+        public class AddToCartRequest
+        {
+            public long UserId { get; set; }
+            public long NomenclatureId { get; set; }
+            public Guid StockId { get; set; }
+            public decimal Quantity { get; set; }
+            public string Unit { get; set; } = "m"; // "m" или "t"
+        }
 
-    public class AddToCartRequest
-    {
-        public long UserId { get; set; }
-        public long NomenclatureId { get; set; }
-        public Guid StockId { get; set; }
-        public decimal Quantity { get; set; }
-        public string Unit { get; set; } = "m"; // "m" или "t"
-    }
-
-    public class UpdateCartItemRequest
-    {
-        public Guid ItemId { get; set; }
-        public decimal Quantity { get; set; }
+        public class UpdateCartItemRequest
+        {
+            public Guid ItemId { get; set; }
+            public decimal Quantity { get; set; }
+        }
     }
 }

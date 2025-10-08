@@ -8,11 +8,14 @@ using TelegramBotApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфигурация для Railway
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.ListenAnyIP(5001);
-//});
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()    // Разрешаем любые домены
+              .AllowAnyMethod();   // Разрешаем любые методы
+    });
+});
 
 // Добавляем контроллеры
 builder.Services.AddControllers();
@@ -33,6 +36,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+app.UseCors(); 
 
 // Инициализация БД
 using (var scope = app.Services.CreateScope())
