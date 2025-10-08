@@ -6,6 +6,8 @@ namespace TelegramBotApi.DTO.Order
         public long UserId { get; set; }
         public string Status { get; set; } = "Pending";
         public decimal TotalAmount { get; set; }
+        public string CustomerLastName { get; set; } = string.Empty;
+        public string INN { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

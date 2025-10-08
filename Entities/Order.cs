@@ -5,13 +5,16 @@ namespace TelegramBotApi.Entities
         public Guid Id { get; set; }
         public long UserId { get; set; }
         public Guid CartId { get; set; }
-        
+
         // Данные клиента
+        public string INN { get; set; } = string.Empty;
+        public string CustomerLastName { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
-        
+    
+
         // Статус и сумма
         public string Status { get; set; } = "Pending"; // Pending, Confirmed, Shipped, Delivered, Cancelled
         public decimal TotalAmount { get; set; }

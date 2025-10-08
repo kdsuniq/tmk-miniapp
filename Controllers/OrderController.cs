@@ -25,9 +25,9 @@ namespace TelegramBotApi.Controllers
                 // Находим корзину пользователя
                 var cart = await _db.Carts
                     .Include(c => c.Items)
-                        .ThenInclude(i => i.Nomenclature)
+                    .ThenInclude(i => i.Nomenclature)
                     .Include(c => c.Items)
-                        .ThenInclude(i => i.Stock)
+                    .ThenInclude(i => i.Stock)
                     .FirstOrDefaultAsync(c => c.UserId == request.UserId);
 
                 if (cart == null || !cart.Items.Any())
@@ -39,6 +39,12 @@ namespace TelegramBotApi.Controllers
                     Id = Guid.NewGuid(),
                     UserId = request.UserId,
                     CartId = cart.Id,
+                    
+                    // ✅ СОХРАНЯЕМ НОВЫЕ ДАННЫЕ
+                    CustomerLastName = request.CustomerLastName,
+                    INN = request.INN,
+                    
+                    // Существующие данные
                     CustomerName = request.CustomerName,
                     Phone = request.Phone,
                     Email = request.Email,
@@ -91,9 +97,9 @@ namespace TelegramBotApi.Controllers
         {
             var orders = await _db.Orders
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Nomenclature)
+                .ThenInclude(i => i.Nomenclature)
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Stock)
+                .ThenInclude(i => i.Stock)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
@@ -104,8 +110,12 @@ namespace TelegramBotApi.Controllers
                 UserId = o.UserId,
                 Status = o.Status,
                 TotalAmount = o.TotalAmount,
+                CustomerLastName = o.CustomerLastName,
+                INN = o.INN,
                 CustomerName = o.CustomerName,
                 Phone = o.Phone,
+                Email = o.Email,
+                Address = o.Address,
                 CreatedAt = o.CreatedAt,
                 Items = o.Items.Select(i => new OrderItemDto
                 {
@@ -130,9 +140,9 @@ namespace TelegramBotApi.Controllers
         {
             var order = await _db.Orders
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Nomenclature)
+                .ThenInclude(i => i.Nomenclature)
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Stock)
+                .ThenInclude(i => i.Stock)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -144,6 +154,8 @@ namespace TelegramBotApi.Controllers
                 UserId = order.UserId,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
+                CustomerLastName = order.CustomerLastName,
+                INN = order.INN,
                 CustomerName = order.CustomerName,
                 Phone = order.Phone,
                 Email = order.Email,
@@ -168,9 +180,12 @@ namespace TelegramBotApi.Controllers
         }
     }
 
+    // ✅ ОБНОВЛЕННЫЙ КЛАСС ЗАПРОСА
     public class CreateOrderRequest
     {
         public long UserId { get; set; }
+        public string CustomerLastName { get; set; } = string.Empty;
+        public string INN { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
